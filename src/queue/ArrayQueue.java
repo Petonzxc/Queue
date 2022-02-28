@@ -36,13 +36,62 @@ import java.util.Objects;
 public class ArrayQueue {
     private Object[] elements;
     private int size;
-    private int head, tail;
+    private int head;
 
     public ArrayQueue() {
         this.elements = new Object[2];
         this.head = 0;
         this.size = 0;
-        this.tail = 0;
+    }
+
+    // Pred: element != null
+    // Post: (if exists i: a[i] == element && for all j [0, i) a[j] != element, R = i
+    // else R = -1) && immutable(n) && n = n'
+    public int indexOf(final Object element) {
+        for(int i = 0; i < size; i++) {
+            if(elements[getId(head + i)].equals(element)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Pred: element != null
+    // Post: R = max(-1, j : a[j] == element, j = 1..n) && immutable(n) && n = n'
+    public int lastIndexOf(final Object element) {
+        for(int i = 0; i < size; i++) {
+            if(elements[getId(getTail() - i - 1)].equals(element)) {
+                return size - i - 1;
+            }
+        }
+        return -1;
+    }
+
+    // Pred: element != null
+    // Post: n' = n + 1 && a[1] = element && for i = 1..n: a[i] = a'[i + 1]
+    public void push(final Object element) {
+        Objects.requireNonNull(element);
+        this.ensureCapacity(size + 1);
+        head = getId(head - 1);
+        elements[head] = element;
+        size++;
+    }
+
+    // Pred: n >= 1
+    // Post: R = a[n] && n' = n && immutable(n')
+    public Object peek() {
+        assert size >= 1;
+        return elements[getId(getTail() - 1)];
+    }
+
+    // Pred: n >= 1
+    // Post: R = a[n] && n' = n - 1 && for i = 1...n': a'[i] = a[i + 1]
+    public Object remove() {
+        assert size >= 1;
+        size--;
+        Object result = elements[getTail()];
+        elements[getTail()] = null;
+        return result;
     }
 
     // Pred: element != null
@@ -50,8 +99,7 @@ public class ArrayQueue {
     public void enqueue(final Object element) {
         Objects.requireNonNull(element);
         this.ensureCapacity(size + 1);
-        elements[tail] = element;
-        tail = this.getId(tail + 1);
+        elements[getTail()] = element;
         size++;
     }
 
@@ -84,7 +132,6 @@ public class ArrayQueue {
                 newElements[i] = elements[this.getId(head + i)];
             }
             head = 0;
-            tail = size;
             elements = newElements;
         }
     }
@@ -106,7 +153,10 @@ public class ArrayQueue {
     public void clear() {
         size = 0;
         head = 0;
-        tail = 0;
         elements = new Object[2];
+    }
+
+    private int getTail() {
+        return getId(head + size);
     }
 }

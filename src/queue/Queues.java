@@ -204,4 +204,33 @@ public final class Queues {
     }
 
     /* package-private */ static final LinearTester<DequeCountModel> DEQUE_COUNT = COUNT::test;
+
+    // === Index
+
+    /* package-private */
+    interface IndexModel extends ReflectionModel {
+        default int indexOf(final Object element) {
+            return reduce(-1, element, (v, i) -> v == -1 ? i : v);
+        }
+
+        default int lastIndexOf(final Object element) {
+            return reduce(-1, element, (v, i) -> i);
+        }
+    }
+
+    /* package-private */ static final LinearTester<IndexModel> INDEX = (tester, queue, random) -> {
+        if (random.nextBoolean()) {
+            queue.indexOf(tester.randomElement(random));
+        } else {
+            queue.lastIndexOf(tester.randomElement(random));
+        }
+    };
+
+
+    // === DequeIndex
+
+    /* package-private */ interface DequeIndexModel extends DequeModel, IndexModel {
+    }
+
+    /* package-private */ static final LinearTester<DequeIndexModel> DEQUE_INDEX = INDEX::test;
 }
